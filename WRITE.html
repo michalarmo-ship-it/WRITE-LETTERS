@@ -1244,9 +1244,10 @@ function showQuiz(char){
     const card = document.createElement('div');
     card.className = 'qcard';
     card.innerHTML = `<div class="qemoji">${c.emoji}</div>`;
+    card.dataset.correct = c.correct ? 'true' : 'false';
     card.onmouseenter = () => playAudio(c.word);
     card.ontouchstart = (e) => { e.preventDefault(); playAudio(c.word); };
-    card.onclick = () => handleQuizAnswer(card, c.correct, q.audio);
+    card.onclick = () => handleQuizAnswer(card, c.correct);
     container.appendChild(card);
   });
 
@@ -1257,7 +1258,7 @@ function showQuiz(char){
   showScreen('quiz');
 }
 
-function handleQuizAnswer(card, correct, audioKey){
+function handleQuizAnswer(card, correct){
   document.querySelectorAll('.qcard').forEach(c => c.onclick = null);
 
   if(correct){
@@ -1275,12 +1276,10 @@ function handleQuizAnswer(card, correct, audioKey){
     card.classList.add('wrong');
     setTimeout(()=>{
       card.classList.remove('wrong');
-      // Re-attach handlers
-      const allCards = document.querySelectorAll('.qcard');
-      const correctCard = [...allCards].find(c => !c.classList.contains('wrong'));
-      allCards.forEach(c => {
-        const isCorrect = c === correctCard;
-        c.onclick = () => handleQuizAnswer(c, isCorrect, audioKey);
+      // Re-attach using data-correct attribute — never confuses cards
+      document.querySelectorAll('.qcard').forEach(c => {
+        const isCorrect = c.dataset.correct === 'true';
+        c.onclick = () => handleQuizAnswer(c, isCorrect);
       });
     }, 700);
   }
